@@ -1,0 +1,77 @@
+@startuml
+skinparam node {
+  backgroundColor LightBlue
+  borderColor DarkBlue
+}
+skinparam artifact backgroundColor White
+
+' --- Облачные среды ---
+cloud "Облачные провайдеры (Multi-Cloud)" {
+  node "AWS Region (eu-west-1)" as aws {
+    node "Kubernetes Cluster (EKS)" as eks_aws {
+      artifact "Auth & Privacy Core" as auth
+      artifact "User & Profile Service" as profile
+      artifact "Commerce Integration Adapter" as commerce
+    }
+    database "Amazon RDS (PostgreSQL)" as rds
+    database "Amazon MSK (Kafka)" as kafka
+  }
+
+  node "Google Cloud (europe-west1)" as gcp {
+    node "GKE Cluster" as gke {
+      artifact "Activity Tracking Service" as activity
+      artifact "Workout Planning Service" as workout
+      artifact "Gamification Service" as gamification
+    }
+    database "Cloud SQL (PostgreSQL)" as cloudsql
+    database "BigQuery (Analytics)" as bq
+  }
+
+  node "Azure (West Europe)" as azure {
+    node "AKS Cluster" as aks {
+      artifact "Social Graph Service" as social
+      artifact "Promo & Content Service" as promo
+    }
+    database "Azure Cosmos DB (Graph API)" as cosmos
+    database "Azure Blob Storage" as blob
+  }
+}
+
+' --- Внешние системы ---
+node "CDN (Cloudflare / Fastly)" as cdn {
+  artifact "Статический контент, изображения"
+}
+
+database "ClickHouse (Managed, например Altinity.Cloud)" as ch {
+  note right: Хранение активности и временных рядов\n(может быть в GCP или отдельно)
+}
+
+' --- Клиенты ---
+actor "Пользователь (iOS/Android)" as user
+actor "Wearable Device (BLE/ANT+)" as device
+
+' --- Связи ---
+user --> cdn : загрузка медиа
+user --> aws : аутентификация, профиль
+user --> gcp : тренировки, активность
+user --> azure : соц. функции, промо
+
+device --> gcp : данные тренировок
+
+auth --> rds
+profile --> rds
+commerce --> rds
+
+activity --> ch
+workout --> cloudsql
+gamification --> cloudsql
+
+social --> cosmos
+promo --> blob
+
+eks_aws --> kafka
+gke --> kafka
+aks --> kafka
+
+kafka --> bq : поток в аналитику
+@enduml

@@ -1,0 +1,50 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam defaultTextAlignment center
+
+' --- Основные сервисы ---
+[Auth & Privacy Core] as auth
+[User & Profile Service] as profile
+[Activity Tracking Service] as activity
+[Social Graph Service] as social
+[Workout Planning Service] as workout
+[Gamification Service] as gamification
+[Promo & Content Service] as promo
+[Commerce Integration Adapter] as commerce
+
+' --- Внешние клиенты ---
+[Mобильное приложение] as mobile
+[Wearables / Датчики] as devices
+
+' --- Основные хранилища (упрощённо) ---
+[Основные данные] as db_rel
+[Социальные связи] as db_graph
+[Активность (тренировки)] as db_ts
+
+' --- Связи: клиенты → сервисы ---
+mobile --> auth : вход / согласие
+mobile --> profile : профиль, инвентарь
+mobile --> activity : отправка GPS / активности
+mobile --> social : поиск, группы
+mobile --> workout : получить план
+mobile --> gamification : запрос достижений
+mobile --> promo : показать промо
+mobile --> commerce : открыть товар
+
+devices --> activity : данные в реальном времени
+
+' --- Связи: сервисы → сервисы ---
+profile --> auth
+activity --> profile
+workout --> profile
+workout --> activity
+social --> profile
+gamification --> activity
+gamification --> social
+promo --> profile
+commerce --> profile
+
+' --- Связи: сервисы → хранилища ---
+profile --> db_rel
+activity --> db_ts
+social --> db_graph
